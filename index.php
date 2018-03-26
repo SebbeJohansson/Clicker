@@ -67,7 +67,7 @@
                 <p>STATS</p></br><p>A lot of clicks</p>
             </section>
 
-            <?php if(!isset($_SESSION['user_id'])) include('createaccount.html'); ?>
+            <?php //if(!isset($_SESSION['user_id'])) include('createaccount.html'); ?>
         </section>
 
 
