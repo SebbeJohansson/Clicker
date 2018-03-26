@@ -49,9 +49,18 @@ function submitLogin(){
             //$("#text").html(response);
             console.log(response);
             if(response === "ok."){
-                $("#text").html("Welcome.");
-                $("#login").html("<h3 id='logout' onclick='logout()'>Logout</h3>");
+                //$("#text").html("Welcome.");
+                $("#login").load("includes/login.php");
                 updateStats();
+                /*$.ajax({
+                    url: "includes/login.php",
+                    success: function(result){
+                        console.log(result);
+                        $("#login").html(result);
+                    }
+                });*/
+                //$("#login").html("<h3 id='logout' onclick='logout()'>Logout</h3>");
+                //updateStats();
                 //window.location.href = "index.php";
                 //alert("Welcome User.");
             }else{
@@ -66,7 +75,36 @@ function submitLogin(){
              }*/
         }
     });
+}
 
+function submitCreateUser(){
+    var data = $("#createform").serialize();
+    $.ajax({
+        type: "POST",
+        url: "doSomething.php",
+        data: data,
+        success: function(response){
+            //$("#text").html(response);
+            console.log(response);
+            if(response === "ok."){
+                //alert("Welcome User.");
+                $('#createform')[0].reset();
+                $("#login").html("<h3 id='logout' onclick='logout()'>Logout</h3>");
+                //window.location.href = "index.php";
+                updateStats();
+            }else{
+                $('#createform')[0].reset();
+                alert("Username Taken.");
+            }
+
+
+            /*if(response == "ok."){
+             $("#text").html(response);
+             }else{
+             $("#text").html("no.");
+             }*/
+        }
+    });
 }
 
 function displayStats(){
@@ -127,7 +165,7 @@ function updateClicks(){
         data: data,
         success: function(response){
             $("#clicks").html(response);
-            console.log(response);
+            //console.log(response);
         },
         error: function(XMLHttpRequest, textStatus, errorThrown){
             alert(errorThrown);
@@ -161,7 +199,7 @@ function colorUpdate(jscolor){
     });
 }
 
-function showAccountCreation(toogle){
+function showAccountCreation(toggle){
     console.log($("#createAccount"));
     $("#createAccount").show();
 }
@@ -172,16 +210,42 @@ $(document).ready(function() {
     updateClicks();
     $("#loginform").validate({
         rules: {
+            username: {
+                required: true
+            },
             password: {
                 required: true
             }
         },
         messages:{
+            username: {
+                required: "Please enter a username"
+            },
             password:{
-                required: "please enter the password"
+                required: "please enter a password"
             }
         },
         submitHandler: submitLogin
+    });
+
+    $("#createform").validate({
+        rules: {
+            username: {
+                required: true
+            },
+            password: {
+                required: true
+            }
+        },
+        messages:{
+            username: {
+                required: "Please enter a username"
+            },
+            password:{
+                required: "please enter a password"
+            }
+        },
+        submitHandler: submitCreateUser
     });
 
 

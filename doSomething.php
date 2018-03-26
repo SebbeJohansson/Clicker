@@ -31,6 +31,9 @@
             case 'logout':
                 $clicker->logout();
                 break;
+            case 'createuser':
+                $clicker->createUser($_POST['username'], $_POST['password']);
+                break;
             case 'displaystats':
                 echo $clicker->displayStats();
                 break;

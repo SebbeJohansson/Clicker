@@ -150,7 +150,6 @@
                 // We found the user.
                 $hash = $user['password'];
                 if (password_verify($password, $hash)){
-                    echo  "ok.";
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['user_username'] = $user['username'];
                     $_SESSION['user_fullname'] = $user['fullname'];
@@ -168,6 +167,8 @@
                     $_SESSION['user_color'] = $userdata['color'];
 
                     $this->username = $username;
+
+                    echo  "ok.";
 
                 }else{
                     echo "not ok";
@@ -198,6 +199,27 @@
             //echo "User Logged out";
         }
 
+        function createUser($username, $password){
+            $username = trim($this->conn->escape_string($username));
+            $password = trim($this->conn->escape_string($password));
+            $hash = password_hash($password, PASSWORD_BCRYPT);
+
+            $sqlusers = "SELECT * FROM ".DB_USERTABLE." WHERE username = '".$username."'";
+
+            $user = $this->conn->query($sqlusers);
+            $user = $user->fetch_assoc();
+
+            $numusers = count($user);
+            if($numusers <= 0) {
+                $sql = "INSERT INTO $this->dbusertable (username, password) VALUES ('$username', '$hash')";
+                $this->conn->query($sql);
+                // Login does ok.
+                $this->login($username, $password);
+            }else{
+                echo "not ok";
+            }
+
+        }
 
         function save($posx, $posy, $time){
 
