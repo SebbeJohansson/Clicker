@@ -1,10 +1,13 @@
 <?php
 
     require_once("definitions.php");
+    require_once("dbClass.php");
 
     //session_start();
 
     class clickerclass{
+
+        private $db;
 
 
         public $userip;
@@ -33,11 +36,7 @@
             $this->dbusertable = DB_USERTABLE;
             $this->dbuserstatstable = "clickerusers";
 
-            $this->conn = new mysqli($this->dbservername, $this->dbusername, $this->dbpassword, $this->dbname);
-            // Check connections
-            if ($this->conn->connect_error) {
-                die("Connection failed: " . $this->conn->connect_error);
-            }
+            $this->db = new dbClass();
 
             $createQuery = "CREATE TABLE ".$this->dbtablename." (
                 id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -51,14 +50,15 @@
             )";
 
             // Checks if table exists. If it does not: create it.
-            if ($result = $this->conn->query("SHOW TABLES LIKE '".$this->dbtablename."'")) {
-                if($result->num_rows == 1) {
-                    //echo "Table exists";
-                }
-                else {
-                    //echo "Table does not exist";
-                    $this->conn->query($createQuery);
-                }
+            $this->db->query("SHOW TABLES LIKE '".$this->dbtablename."'");
+            $this->db->executeWithoutArr();
+            if($this->db->rowCount() == 1) {
+                //echo "Table exists";
+            }
+            else {
+                //echo "Table does not exist";
+                $this->db->query($createQuery);
+                $this->db->executeWithoutArr();
             }
 
             $createQuery = "CREATE TABLE ".$this->dbusertable."(
@@ -73,17 +73,16 @@
                 PRIMARY KEY (id)
             )";
 
-            //echo "Printing some fucking shit. ".$this->conn->query($createQuery);
-
             // Checks if table exists. If it does not: create it.
-            if ($result = $this->conn->query("SHOW TABLES LIKE '".$this->dbusertable."'")) {
-                if($result->num_rows == 1) {
-                    //echo "Table exists";
-                }
-                else {
-                    //echo "Table does not exist";
-                    $this->conn->query($createQuery);
-                }
+            $this->db->query("SHOW TABLES LIKE '".$this->dbusertable."'");
+            $this->db->executeWithoutArr();
+            if($this->db->rowCount() == 1) {
+                //echo "Table exists";
+            }
+            else {
+                //echo "Table does not exist";
+                $this->db->query($createQuery);
+                $this->db->executeWithoutArr();
             }
 
 
@@ -100,18 +99,16 @@
             ENGINE=InnoDB
             ";
 
-            //echo "Printing some fucking shit. ".$this->conn->query($createQuery);
-
             // Checks if table exists. If it does not: create it.
-            if ($result = $this->conn->query("SHOW TABLES LIKE '".$this->dbuserstatstable."'")) {
-                if($result->num_rows == 1) {
-                    //echo "Table exists";
-                }
-                else {
-                    echo "Table does not exist";
-                    $this->conn->query($createQuery);
-                    echo $this->conn->error;
-                }
+            $this->db->query("SHOW TABLES LIKE '".$this->dbuserstatstable."'");
+            $this->db->executeWithoutArr();
+            if($this->db->rowCount() == 1) {
+                //echo "Table exists";
+            }
+            else {
+                //echo "Table does not exist";
+                $this->db->query($createQuery);
+                $this->db->executeWithoutArr();
             }
 
 
@@ -135,18 +132,14 @@
         }
 
         function login($username, $password){
-            //$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_DATABASE);
-            $username = trim($this->conn->escape_string($username));
-            $password = trim($this->conn->escape_string($password));
+            $sqlusers = "SELECT * FROM ".DB_USERTABLE." WHERE username = :username";
 
-            $sqlusers = "SELECT * FROM ".DB_USERTABLE." WHERE username = '".$username."'";
+            $this->db->query($sqlusers);
+            $this->db->execute(['username' => $username]);
 
-            $user = $this->conn->query($sqlusers);
-            $user = $user->fetch_assoc();
+            $user = $this->db->resultSingle();
 
-            $numusers = count($user);
-
-            if($numusers != 0){
+            if($this->db->rowCount() != 0){
                 // We found the user.
                 $hash = $user['password'];
                 if (password_verify($password, $hash)){
@@ -158,11 +151,12 @@
                     $_SESSION['user_admin'] = $user['admin'];
 
 
+                    $sqldata = "SELECT * FROM ".$this->dbuserstatstable." WHERE userid = :userid";
 
-                    $sqldata = "SELECT * FROM ".$this->dbuserstatstable." WHERE userid = '".$user['id']."'";
+                    $this->db->query($sqldata);
+                    $this->db->execute(['userid' => $user['id']]);
 
-                    $userdata = $this->conn->query($sqldata);
-                    $userdata = $userdata->fetch_assoc();
+                    $userdata = $this->db->resultSingle();
 
                     $_SESSION['user_color'] = $userdata['color'];
 
@@ -200,19 +194,19 @@
         }
 
         function createUser($username, $password){
-            $username = trim($this->conn->escape_string($username));
-            $password = trim($this->conn->escape_string($password));
             $hash = password_hash($password, PASSWORD_BCRYPT);
 
-            $sqlusers = "SELECT * FROM ".DB_USERTABLE." WHERE username = '".$username."'";
+            $sqlusers = "SELECT * FROM ".DB_USERTABLE." WHERE username = :username";
 
-            $user = $this->conn->query($sqlusers);
-            $user = $user->fetch_assoc();
+            $this->db->query($sqlusers);
+            $this->db->execute(['username' => $username]);
 
-            $numusers = count($user);
-            if($numusers <= 0) {
-                $sql = "INSERT INTO $this->dbusertable (username, password) VALUES ('$username', '$hash')";
-                $this->conn->query($sql);
+            if($this->db->rowCount() <= 0) {
+                $sql = "INSERT INTO $this->dbusertable (username, password) VALUES (:username, :hash)";
+                $this->db->query($sql);
+                $this->db->execute(['username' => $username, 'hash' => $hash]);
+
+
                 // Login does ok.
                 $this->login($username, $password);
             }else{
@@ -226,47 +220,46 @@
             if(isset($_SESSION['user_id'])){
 
 
-                $posx = trim($this->conn->escape_string($posx));
-                $posy = trim($this->conn->escape_string($posy));
-                $time = trim($this->conn->escape_string($time));
+                $posx = trim($posx);
+                $posy = trim($posy);
+                $time = trim($time);
+                $userid = $_SESSION['user_id'];
+                $ip = $_SERVER['REMOTE_ADDR'];
 
                 $this->lastmousepos = [$posx, $posy];
                 $this->lasttime = $time;
 
-                $sql = "INSERT INTO $this->dbtablename (posx, posy, clicker, ip, time) VALUES ($posx, $posy, ".$_SESSION['user_id'].", '".$_SERVER['REMOTE_ADDR']."', $time)";
+                $sql = "INSERT INTO $this->dbtablename (posx, posy, clicker, ip, time) VALUES (:posx, :posy, :userid, :ip, :time)";
+                $this->db->query($sql);
+                $this->db->execute(['posx' => $posx, 'posy' => $posy, 'userid' => $userid, 'ip' => $ip, 'time' => $time]);
 
-                //echo $sql;
-
-                //echo $_SERVER['REMOTE_ADDR'];
-
-                $this->conn->query($sql);
-
-                $sql = "SELECT id FROM clicker WHERE clicker=".$_SESSION['user_id'];
-
-                $totalclicks = $this->conn->query($sql)->num_rows;
+                $sql = "SELECT id FROM clicker WHERE clicker=:userid";
+                $this->db->query($sql);
+                $this->db->execute(['userid' => $userid]);
+                $totalclicks = $this->db->rowCount();
 
                 $sql = "
                 INSERT INTO $this->dbuserstatstable (userid, joined, totalclicks)
-                    VALUES ('".$_SESSION['user_id']."', '".time()."', '$totalclicks')
+                    VALUES (:userid, :time, :clicks)
                 ON DUPLICATE KEY UPDATE 
-                    totalclicks = $totalclicks
+                    totalclicks = :clicks
                 ";
+                $this->db->query($sql);
+                $this->db->execute(['userid' => $userid, 'time' => $time, 'clicks' => $totalclicks]);
 
-                $this->conn->query($sql);
-
-                return $this->conn->error.$_POST['mousex'].", ".$_POST['mousey']."\n\n".$this->jointime;
-
-                //echo "Saved";
+                echo "Saved.";
             }else{
                 return "You are not logged in. Log in to save clicks.";
             }
         }
 
         function displayStats(){
+            $sql = "SELECT * FROM $this->dbtablename";
+            $this->db->query($sql);
+            $this->db->executeWithoutArr();
+            $clicksnum = $this->db->rowCount();
+            $clicks = $this->db->resultAssoc();
 
-            $result = $this->conn->query("SELECT * FROM $this->dbtablename");
-            $clicksnum = $result->num_rows;
-            $clicks = $result->fetch_all(MYSQLI_ASSOC);
             $times = [];
             $usertimes = [];
             $userdata = null;
@@ -283,11 +276,10 @@
             ORDER BY count(c.id) DESC LIMIT 5
             ";
             // "SELECT count(id), clicker FROM $this->dbtablename c GROUP BY clicker ORDER BY count(id) DESC LIMIT 5"
-            $topclickers = $this->conn->query($query);
-            $topclickers = $topclickers->fetch_all(MYSQLI_ASSOC);
+            $this->db->query($query);
+            $this->db->executeWithoutArr();
+            $topclickers = $this->db->resultAssoc();
 
-
-            //$firstclick = $clicks[0]['time'];
             $highestclick = [0,0];
             $mostsidewaysclick = [0,0];
 
@@ -316,8 +308,14 @@
 
 
             if(isset($_SESSION['user_id'])){
-                $result = $this->conn->query("SELECT * FROM $this->dbuserstatstable WHERE userid=".$_SESSION['user_id']);
-                $userdata = $result->fetch_assoc();
+                //$result = $this->conn->query("SELECT * FROM $this->dbuserstatstable WHERE userid=".$_SESSION['user_id']);
+                //$userdata = $result->fetch_assoc();
+
+                $sql = "SELECT * FROM $this->dbuserstatstable WHERE userid=:userid";
+                $this->db->query($sql);
+                $this->db->execute(['userid' => $_SESSION['user_id']]);
+
+                $userdata = $this->db->resultSingle();
 
                 $userjoined = $userdata['joined'];
             }
@@ -397,12 +395,14 @@
 
             $string = "";
 
-            $result = $this->conn->query("SELECT * FROM $this->dbtablename");
-            $clicksnum = $result->num_rows;
-            $clicks = $result->fetch_all(MYSQLI_ASSOC);
+            $this->db->query("SELECT * FROM $this->dbtablename");
+            $this->db->executeWithoutArr();
+            $clicksnum = $this->db->rowCount();
+            $clicks = $this->db->resultAssoc();
 
-            $result = $this->conn->query("SELECT userid, color FROM $this->dbuserstatstable");
-            $users = $result->fetch_all(MYSQLI_ASSOC);
+            $this->db->query("SELECT userid, color FROM $this->dbuserstatstable");
+            $this->db->executeWithoutArr();
+            $users = $this->db->resultAssoc();
 
             foreach($clicks as $click){
                 $clicker = null;
@@ -429,20 +429,29 @@
         function updateColor($color){
 
             if(isset($_SESSION['user_id'])) {
-                $color = trim($this->conn->escape_string($color));
+                $color = trim($color);
+                $time = time();
+                $ip = $_SERVER['REMOTE_ADDR'];
+                $userid = $_SESSION['user_id'];
                 $_SESSION['user_color'] = $color;
 
-                $sql = "SELECT id FROM clicker WHERE clicker=".$_SESSION['user_id'];
-                $totalclicks = $this->conn->query($sql)->num_rows;
+
+                $sql = "SELECT id FROM clicker WHERE clicker=:userid";
+                $this->db->query($sql);
+                $this->db->execute(['userid' => $userid]);
+
+                $totalclicks = $this->db->rowCount();
+
 
                 $sql = "
                 INSERT INTO $this->dbuserstatstable (userid, joined, totalclicks, ip, color)
-                    VALUES ('".$_SESSION['user_id']."', '".time()."', '$totalclicks', '".$_SERVER['REMOTE_ADDR']."', '$color')
+                    VALUES (:userid, :time, :totalclicks, :ip, :color)
                 ON DUPLICATE KEY UPDATE 
-                    color = '$color'
+                    color = :color
                 ";
 
-                $this->conn->query($sql);
+                $this->db->query($sql);
+                $this->db->execute(['userid' => $userid, 'ip' => $ip, 'time' => $time, 'color' => $color, 'totalclicks' => $totalclicks]);
 
             }else{
             }

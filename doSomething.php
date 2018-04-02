@@ -5,7 +5,7 @@
      * Date: 2018-01-02
      * Time: 20:13
      */
-    include_once("clickerclass.php");
+    include_once("classes/clickerclass.php");
     session_start();
 
 

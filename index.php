@@ -1,7 +1,7 @@
 <?php
     session_start();
 
-    include_once("clickerclass.php");
+    include_once("classes/clickerclass.php");
     $_SESSION['initialtime'] = time();
 
     if(isset($_SESSION['user_id'])){
