@@ -51,14 +51,14 @@
 
             // Checks if table exists. If it does not: create it.
             $this->db->query("SHOW TABLES LIKE '".$this->dbtablename."'");
-            $this->db->execute();
+            $this->db->executeWithoutArr();
             if($this->db->rowCount() == 1) {
                 //echo "Table exists";
             }
             else {
                 //echo "Table does not exist";
                 $this->db->query($createQuery);
-                $this->db->execute();
+                $this->db->executeWithoutArr();
             }
 
             $createQuery = "CREATE TABLE ".$this->dbusertable."(
@@ -75,14 +75,14 @@
 
             // Checks if table exists. If it does not: create it.
             $this->db->query("SHOW TABLES LIKE '".$this->dbusertable."'");
-            $this->db->execute();
+            $this->db->executeWithoutArr();
             if($this->db->rowCount() == 1) {
                 //echo "Table exists";
             }
             else {
                 //echo "Table does not exist";
                 $this->db->query($createQuery);
-                $this->db->execute();
+                $this->db->executeWithoutArr();
             }
 
 
@@ -101,14 +101,14 @@
 
             // Checks if table exists. If it does not: create it.
             $this->db->query("SHOW TABLES LIKE '".$this->dbuserstatstable."'");
-            $this->db->execute();
+            $this->db->executeWithoutArr();
             if($this->db->rowCount() == 1) {
                 //echo "Table exists";
             }
             else {
                 //echo "Table does not exist";
                 $this->db->query($createQuery);
-                $this->db->execute();
+                $this->db->executeWithoutArr();
             }
 
 
@@ -256,7 +256,7 @@
         function displayStats(){
             $sql = "SELECT * FROM $this->dbtablename";
             $this->db->query($sql);
-            $this->db->execute();
+            $this->db->executeWithoutArr();
             $clicksnum = $this->db->rowCount();
             $clicks = $this->db->resultAssoc();
 
@@ -277,7 +277,7 @@
             ";
             // "SELECT count(id), clicker FROM $this->dbtablename c GROUP BY clicker ORDER BY count(id) DESC LIMIT 5"
             $this->db->query($query);
-            $this->db->execute();
+            $this->db->executeWithoutArr();
             $topclickers = $this->db->resultAssoc();
 
             $highestclick = [0,0];
@@ -396,12 +396,12 @@
             $string = "";
 
             $this->db->query("SELECT * FROM $this->dbtablename");
-            $this->db->execute();
+            $this->db->executeWithoutArr();
             $clicksnum = $this->db->rowCount();
             $clicks = $this->db->resultAssoc();
 
             $this->db->query("SELECT userid, color FROM $this->dbuserstatstable");
-            $this->db->execute();
+            $this->db->executeWithoutArr();
             $users = $this->db->resultAssoc();
 
             foreach($clicks as $click){

@@ -44,7 +44,7 @@
             return $this->stmt->execute();
         }
 
-        public function execute($arr = array()){
+        public function execute($arr){
             return $this->stmt->execute($arr);
         }
 
