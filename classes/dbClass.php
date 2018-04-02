@@ -40,11 +40,7 @@
             $this->stmt = $this->conn->prepare($query);
         }
 
-        public function executeWithoutArr(){
-            return $this->stmt->execute();
-        }
-
-        public function execute($arr){
+        public function execute($arr = array()){
             return $this->stmt->execute($arr);
         }
 
