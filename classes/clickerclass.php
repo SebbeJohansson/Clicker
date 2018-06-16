@@ -26,7 +26,7 @@
 
         protected $conn;
 
-
+    '<div class='gallery'><video width='800' height='450' controls><source src='$file' type='video/mp4'></video></div>';
         function __construct($ip){
             $this->dbservername = DB_HOST;
             $this->dbusername = DB_USER;
@@ -162,7 +162,7 @@
 
                     $this->username = $username;
 
-                    echo  "ok.";
+                    echo "ok.";
 
                 }else{
                     echo "not ok";

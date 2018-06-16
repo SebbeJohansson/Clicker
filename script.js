@@ -46,6 +46,7 @@ function submitLogin(){
         url: "doSomething.php",
         data: data,
         success: function(response){
+            response = response.replace(/\s/g, '');
             //$("#text").html(response);
             console.log(response);
             if(response === "ok."){

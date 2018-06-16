@@ -20,6 +20,6 @@
 
     }else{
         echo "<form method='post'  id='loginform' enctype='multipart/form-data'><input type='text' name='username' id='username' placeholder='Username'><input type='password' name='password' id='password' placeholder='Password'><button type='submit' name='login'>login</button><input type='hidden' name='action' value='login'></form>";
-        echo $_SESSION['user_id'];
+        //echo $_SESSION['user_id'];
     }
 ?>
