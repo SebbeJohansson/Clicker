@@ -4,3 +4,5 @@ Go to: [projects.sebbejohansson.com/clicker/](http://projects.sebbejohansson.com
 
 Webapp where you click on a page.\
 Submitted as is.
+
+Webhook? wat dat?
